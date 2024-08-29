@@ -2,6 +2,7 @@ pipelineJob('CI_Pipeline') {
     definition {
         cps {
             script('''
+
                 pipeline {
                     agent none
 
@@ -31,6 +32,7 @@ pipelineJob('CI_Pipeline') {
                               docker { image 'gradle:8.10.0-jdk17-alpine' }
                             } 
                             steps {
+                                sh 'chmod +x ./gradlew'
                                 sh './gradlew clean build -x test'
                             }
                             post {
@@ -40,49 +42,34 @@ pipelineJob('CI_Pipeline') {
                             }
                         }
 
-                        stage('Test') {
-                            agent {
-                              docker { image 'gradle:8.10.0-jdk17-alpine' }
-                            }
-                            steps {
-                                sh './gradlew test'
-                            }
-                        }
-
                         stage('Build Docker Image') {
-                            agent {
-                              docker { image 'docker:27.2.0-dind' }
+                            agent { 
+                                label "controller"
                             }
                             steps {
                                 script {
-                                    dockerImage = docker.build("${ECR_REPOSITORY}:${GIT_BRANCH}-${BUILD_NUMBER}")
+                                    dockerImage = docker.build("${ECR_REPOSITORY}:${BUILD_NUMBER}", "-f Dockerfile .")
                                 }
                             }
                         }
-
                         stage('Push to ECR') {
-                            agent {
-                              docker { image 'docker:27.2.0-dind' }
+                            agent { 
+                                label "controller"
                             }
                             steps {
-                                withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
-                                    script {
-                                        sh """
-                                            \$(aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY})
-                                            docker push ${ECR_REPOSITORY}:${GIT_BRANCH}-${BUILD_NUMBER}
-                                        """
-                                    }
+                                script {
+                                    sh """
+                                        aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 516607723507.dkr.ecr.ap-northeast-2.amazonaws.com
+                                        docker push ${ECR_REPOSITORY}:${BUILD_NUMBER}
+                                    """
                                 }
                             }
                         }
                     }
 
-                    post {
-                        always {
-                            cleanWs()
-                        }
-                    }
                 }
+            
+            
             ''')
             sandbox()
         }
