@@ -7,12 +7,13 @@ pipelineJob('example-pipeline') {
           stages {
             stage('Example') {
               steps {
-                echo 'Hello, World!'
+                echo 'testing sandbox'
               }
             }
           }
         }
       ''')
+      sandbox(true)
     }
   }
 }

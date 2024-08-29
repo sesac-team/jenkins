@@ -7,7 +7,7 @@ pipelineJob('example-pipeline2') {
           stages {
             stage('Example') {
               steps {
-                echo 'Hello, World! copy'
+                echo 'testing without sandbox'
               }
             }
           }
