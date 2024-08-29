@@ -14,7 +14,9 @@ pipelineJob('CI_Pipeline') {
 
                     stages {
                         stage('Checkout') {
-                            agent { label 'gradle' }
+                            agent {
+                              docker { image 'gradle:8.10.0-jdk17-alpine' }
+                            }
                             steps {
                                 checkout([
                                     $class: 'GitSCM',
@@ -25,7 +27,9 @@ pipelineJob('CI_Pipeline') {
                         }
 
                         stage('Build') {
-                            agent { label 'gradle' }
+                            agent{
+                              docker { image 'gradle:8.10.0-jdk17-alpine' }
+                            } 
                             steps {
                                 sh './gradlew clean build -x test'
                             }
@@ -37,14 +41,18 @@ pipelineJob('CI_Pipeline') {
                         }
 
                         stage('Test') {
-                            agent { label 'gradle' }
+                            agent {
+                              docker { image 'gradle:8.10.0-jdk17-alpine' }
+                            }
                             steps {
                                 sh './gradlew test'
                             }
                         }
 
                         stage('Build Docker Image') {
-                            agent { label 'docker' }
+                            agent {
+                              docker { image 'docker:27.2.0-dind' }
+                            }
                             steps {
                                 script {
                                     dockerImage = docker.build("${ECR_REPOSITORY}:${GIT_BRANCH}-${BUILD_NUMBER}")
@@ -53,12 +61,14 @@ pipelineJob('CI_Pipeline') {
                         }
 
                         stage('Push to ECR') {
-                            agent { label 'docker' }
+                            agent {
+                              docker { image 'docker:27.2.0-dind' }
+                            }
                             steps {
                                 withAWS(region: "${AWS_REGION}", credentials: 'aws-credentials-id') {
                                     script {
                                         sh """
-                                            $(aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY})
+                                            \$(aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY})
                                             docker push ${ECR_REPOSITORY}:${GIT_BRANCH}-${BUILD_NUMBER}
                                         """
                                     }
