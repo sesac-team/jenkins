@@ -15,7 +15,7 @@ pipelineJob('CI_Pipeline') {
                     stages {
                         stage('Checkout') {
                             agent {
-                              docker { image 'gradle:8.10.0-jdk17-alpine' }
+                              docker { image 'bitnami/git:latest' }
                             }
                             steps {
                                 checkout([
