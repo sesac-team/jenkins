@@ -60,7 +60,7 @@ pipeline {
             steps {
                 script {
                     app = docker.build("${ECR_REPOSITORY}")
-                    docker.withRegistry("https://${ECR_DOMAIN}", 'ecr:${AWS_REGION}:aws') {
+                    docker.withRegistry("https://${ECR_DOMAIN}", 'ecr:${AWS_REGION}:AWS_ACCESS_KEY') {
                         app.push("${BUILD_NUMBER}")
                         app.push("latest")
                     }
