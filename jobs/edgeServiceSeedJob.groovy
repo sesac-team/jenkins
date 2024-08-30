@@ -1,4 +1,7 @@
 pipelineJob('edgeServicePipeline') {
+    triggers{
+        githubPush()
+    }
     definition {
         cps {
             script('''
