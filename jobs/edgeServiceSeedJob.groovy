@@ -10,7 +10,9 @@ pipeline {
     environment {
         AWS_REGION = 'ap-northeast-2'
         SERVICE_NAME = 'edge-service'
-        ECR_REPOSITORY = "516607723507.dkr.ecr.ap-northeast-2.amazonaws.com/fullaccel/${SERVICE_NAME}"
+        PROJECT_NAME = "fullaccel"
+        ECR_DOMAIN = "516607723507.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        ECR_REPOSITORY = "${ECR_DOMAIN}/${PROJECT_NAME}/${SERVICE_NAME}"
         GIT_REPO_URL = "https://github.com/sesac-team/${SERVICE_NAME}.git"
         GIT_BRANCH = 'main'
     }
@@ -51,36 +53,20 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Docker Image & Push to ECR') {
             agent {
                 label "controller"
             }
             steps {
                 script {
-                    def imageId = sh(script: "docker build -f Dockerfile -q .", returnStdout: true).trim()
-                    sh """
-                        docker tag ${imageId} ${ECR_REPOSITORY}:${BUILD_NUMBER}
-                        docker tag ${imageId} ${ECR_REPOSITORY}:latest
-                    """
+                    app = docker.build("${ECR_REPOSITORY}")
+                    docker.withRegistry("https://${ECR_DOMAIN}", 'ecr:${AWS_REGION}:aws') {
+                        app.push("${BUILD_NUMBER}")
+                        app.push("latest")
+                    }
                 }
             }
         }
-
-        stage('Push to ECR') {
-            agent {
-                label "controller"
-            }
-            steps {
-                script {
-                    sh """
-                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY}
-                        docker push ${ECR_REPOSITORY}:${BUILD_NUMBER}
-                        docker push ${ECR_REPOSITORY}:latest
-                    """
-                }
-            }
-        }
-
         stage('Update Deployment Repo & Push') {
             agent {
                 label "controller"
@@ -92,7 +78,7 @@ pipeline {
                 DEPLOY_REPO_URL = "https://github.com/${GITHUB_ID}/deployment.git"
             }
             steps {
-                git branch: "main", credentialsId: 'github-token', url: "${DEPLOY_REPO_URL}"
+                git branch: "${GIT_BRANCH}", credentialsId: 'github-token', url: "${DEPLOY_REPO_URL}"
                 sh "git config --global --add safe.directory ${workspace}"
                 sh "git config --global user.name ${GITHUB_USER}"
                 sh "git config --global user.email ${GITHUB_EMAIL}"
@@ -100,7 +86,7 @@ pipeline {
                 sh 'git add ${SERVICE_NAME}/deployment.yaml'
                 sh 'git commit -m "${SERVICE_NAME} Build. Build_NUMBER-${BUILD_NUMBER}"'
                 withCredentials([gitUsernamePassword(credentialsId: 'github-token', gitToolName:'Default')]) {
-                    sh 'git push --set-upstream origin main'
+                    sh 'git push --set-upstream origin ${GIT_BRANCH}'
                 }
             }
         }
