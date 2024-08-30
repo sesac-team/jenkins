@@ -59,9 +59,9 @@ pipeline {
             }
             steps {
                 script {
-                    app = docker.build("${ECR_REPOSITORY}")
-                    docker.withRegistry("https://${ECR_DOMAIN}", 'ecr:${AWS_REGION}:AWS_ACCESS_KEY') {
-                        app.push("${BUILD_NUMBER}")
+                    docker.withRegistry("https://${ECR_DOMAIN}", "ecr:${AWS_REGION}:AWS_ACCESS_KEY") {
+                        app = docker.build("${ECR_REPOSITORY}:${BUILD_NUMBER}", "--no-cache .")
+                        app.push()
                         app.push("latest")
                     }
                 }
@@ -100,6 +100,7 @@ pipeline {
         }
     }
 }       
+            
             ''')
             sandbox()
         }
