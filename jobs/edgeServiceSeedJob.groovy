@@ -5,6 +5,13 @@ pipelineJob('edgeServicePipeline') {
 pipeline {
     agent none
 
+    stages('Start'){
+        agent any
+        steps {
+            slackSend(channel: '#ci-cd', color: '#FFFF00', message: "STARTED PIPELINE: '${env.JOB_NAME}:${env.BUILD_NUMBER}' ${env.BUILD_URL}")
+        }
+    }
+
     environment {
         AWS_REGION = 'ap-northeast-2'
         SERVICE_NAME = 'edge-service'
@@ -93,6 +100,14 @@ pipeline {
                 withCredentials([gitUsernamePassword(credentialsId: 'github-token', gitToolName:'Default')]) {
                     sh 'git push --set-upstream origin main'
                 }
+            }
+        }
+        post{
+            success{
+                slackSend(channel: '#ci-cd', color: '#00FF00', message: "SUCCESS PIPELINE: '${env.JOB_NAME}:${env.BUILD_NUMBER}' ${env.BUILD_URL}")
+            }
+            failure{
+                slackSend(channel: '#ci-cd', color: '#FF0000', message: "FAILED PIPELINE: '${env.JOB_NAME}:${env.BUILD_NUMBER}' ${env.BUILD_URL}")
             }
         }
     }
