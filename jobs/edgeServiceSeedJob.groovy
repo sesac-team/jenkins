@@ -82,7 +82,7 @@ pipeline {
                 sh "git config --global --add safe.directory ${workspace}"
                 sh "git config --global user.name ${GITHUB_USER}"
                 sh "git config --global user.email ${GITHUB_EMAIL}"
-                sh 'sed -i "s|image:.*|image:${ECR_REPOSITORY}:${BUILD_NUMBER}|g" ${SERVICE_NAME}/deployment.yaml'
+                sh 'sed -i "s|image:.*|image: ${ECR_REPOSITORY}:${BUILD_NUMBER}|g" ${SERVICE_NAME}/deployment.yaml'
                 sh 'git add ${SERVICE_NAME}/deployment.yaml'
                 sh 'git commit -m "${SERVICE_NAME} Build. Build_NUMBER-${BUILD_NUMBER}"'
                 withCredentials([gitUsernamePassword(credentialsId: 'github-token', gitToolName:'Default')]) {
