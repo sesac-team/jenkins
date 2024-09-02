@@ -44,7 +44,7 @@ pipeline {
             }
             steps {
                 sh 'chmod +x ./gradlew'
-                sh './gradlew clean build -x test'
+                sh './gradlew clean buildAngular -x test'
             }
             post {
                 success {
