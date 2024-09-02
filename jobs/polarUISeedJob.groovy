@@ -9,7 +9,7 @@ pipeline {
     agent none
     environment {
         AWS_REGION = 'ap-northeast-2'
-        SERVICE_NAME = 'polari-ui'
+        SERVICE_NAME = 'polar-ui'
         PROJECT_NAME = "fullaccel"
         ECR_DOMAIN = "516607723507.dkr.ecr.${AWS_REGION}.amazonaws.com"
         ECR_REPOSITORY = "${ECR_DOMAIN}/${PROJECT_NAME}/${SERVICE_NAME}"
