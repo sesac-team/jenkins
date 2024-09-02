@@ -40,11 +40,12 @@ pipeline {
 
         stage('Build') {
             agent {
-                docker { image 'gradle:8.10.0-jdk17-alpine' }
+                docker { image 'node:22-alpine' }
             }
             steps {
-                sh 'chmod +x ./gradlew'
-                sh './gradlew clean buildAngular -x test'
+                sh 'npm install -g @angular/cli'
+                sh 'npm install'
+                sh 'ng build --prod'
             }
             post {
                 success {
