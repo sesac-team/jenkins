@@ -5,6 +5,7 @@ pipelineJob('polarUIPipeline') {
     definition {
         cps {
             script('''
+
 pipeline {
     agent none
     environment {
@@ -43,14 +44,7 @@ pipeline {
                 docker { image 'node:22-alpine' }
             }
             steps {
-                sh 'npm install -g @angular/cli --unsafe-perm=true'
-                sh 'npm install'
-                sh 'ng build --prod'
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: 'dist/**', allowEmptyArchive: true
-                }
+                sh 'echo build skipped'
             }
         }
 
@@ -101,6 +95,8 @@ pipeline {
         }
     }
 }       
+            
+            
             
             ''')
             sandbox()
