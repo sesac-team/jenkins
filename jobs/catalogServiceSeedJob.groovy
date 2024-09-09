@@ -16,7 +16,6 @@ pipeline {
         GIT_REPO_URL = "https://github.com/sesac-team/${SERVICE_NAME}.git"
         GIT_BRANCH = 'main'
     }
-
     stages {
 
     stage('Start'){
