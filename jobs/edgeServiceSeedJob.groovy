@@ -19,7 +19,7 @@ pipeline {
 
     stages {
 
-    stage('Start Pipeline'){
+    stage('Start!!'){
         agent any
         steps {
             slackSend(channel: '#ci-cd', color: '#FFFF00', message: "STARTED PIPELINE: '${env.JOB_NAME}:${env.BUILD_NUMBER}' ${env.BUILD_URL}")
